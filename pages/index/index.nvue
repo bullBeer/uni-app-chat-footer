@@ -1,0 +1,218 @@
+<template>
+	<view class="container">
+		<list class="list" @touchstart="listTouch">
+      <cell class="item" v-for="(item, i) in 30" :key="i" :ref="'item' + i">
+        <text class="text">消息-哈哈哈+{{i}}</text>
+      </cell>
+    </list>
+    <view class="footer" :style="`height: ${footerHeight + safeAreaBottomHeight}px;`">
+      <view class="footer-bd" :style="`height: ${footerHeight + safeAreaBottomHeight}px;`">
+        <view class="input-box" id="input-box">
+          <input ref="input" placeholder-class="placeholder" @blur="blur" class="input" type="text" :adjust-position="false" :confirm-hold="true" confirm-type="send" placeholder="请输入" />
+          <text class="more" @tap="clickMore">+</text>
+        </view>
+        <view class="exten-box" id="exten-box" v-if="extenBoxShow">
+          <view class="exten-item">
+            <text class="exten-item-text">照片</text>
+          </view>
+          <view class="exten-item">
+            <text class="exten-item-text">拍摄</text>
+          </view>
+          <view class="exten-item">
+            <text class="exten-item-text">位置</text>
+          </view>
+          <view class="exten-item">
+            <text class="exten-item-text">文件</text>
+          </view>
+        </view>
+      </view>
+    </view>
+	</view>
+</template>
+
+<script>
+  const dom = weex.requireModule('dom')
+  const screenWidth = uni.getSystemInfoSync().screenWidth // 屏幕宽度
+  const safeAreaBottomHeight = uni.getSystemInfoSync().safeAreaInsets.bottom // 底部安全区域高度
+	export default {
+		data() {
+			return {
+        hasKeyboard: false, // 是否弹出键盘
+        footerHeight: 0, // 底部高度 键盘弹出时：高度=键盘高度+输入框容器高度，键盘收缩时：高度=聊天更多功能容器高度+输入框容器高度||输入框容器高度
+        inputBoxHeight: 0, // 输入框容器高度
+        extenHeight: 0, // 聊天更多功能容器高度
+        extenBoxShow: false, // 是否显示更多功能容器
+			}
+		},
+    computed: {
+      safeAreaBottomHeight() {
+        return this.hasKeyboard ? 0 : safeAreaBottomHeight
+      }
+    },
+    mounted() {
+      // 初始化底部高度
+      this.inputBoxHeight = this.getPX(120)
+      this.extenHeight = this.getPX(300)
+      this.footerHeight = this.inputBoxHeight
+      
+      // 监听键盘高度
+      uni.onKeyboardHeightChange(this.onKeyboardHeightChange)
+    },
+    onUnload() {
+      // 取消监听键盘高度
+      uni.offKeyboardHeightChange(this.onKeyboardHeightChange)
+    },
+		methods: {
+      // 监听键盘高度
+      onKeyboardHeightChange(res) {
+        if (res.height > 0 && !this.hasKeyboard) {
+          console.log('res.height', res.height) // 键盘高度
+          this.hasKeyboard = true
+          this.extenBoxShow = false
+          this.footerHeight = this.inputBoxHeight + res.height
+          setTimeout(() => {
+            dom.scrollToElement(this.$refs['item' + 29][0], {
+              // animated: false //  禁止动画
+            })
+          }, 50)
+        }
+      },
+      // rpx转px
+      getPX(rpx) {
+        return screenWidth / 750 * rpx
+      },
+      // 元素UI信息
+      getReact(id) {
+        const query = uni.createSelectorQuery().in(this);
+        return new Promise(resolve => {
+          query.select('#' + id).boundingClientRect(data => {
+            console.log("得到布局位置信息" + JSON.stringify(data));
+            resolve(data)
+          }).exec();
+        })
+      },
+      // 键盘收缩|input失去焦点
+      blur() {
+        this.hasKeyboard = false
+        if (this.extenBoxShow) {
+          this.footerHeight = this.inputBoxHeight + this.extenHeight
+        } else {
+          this.footerHeight = this.inputBoxHeight
+        }
+        setTimeout(() => {
+          dom.scrollToElement(this.$refs['item' + 29][0], {
+            // animated: false //  禁止动画
+          })
+        }, 50)
+      },
+      // 更多聊天功能点击
+      clickMore() {
+        const inputRef = this.$refs.input
+        this.extenBoxShow = !this.extenBoxShow
+        if (this.hasKeyboard) {
+          inputRef.blur()
+        } else {
+          if (this.extenBoxShow) {
+            this.blur()
+          } else {
+            inputRef.focus()
+          }
+        }
+      },
+      // 聊天视图容器点击
+      listTouch() {
+        if (this.extenBoxShow) {
+          this.extenBoxShow = false
+          this.blur()
+        } else {
+          this.$refs.input.blur()
+        }
+      },
+		}
+	}
+</script>
+
+<style lang="less" scoped>
+	.container {
+		flex: 1;
+    overflow: hidden;
+    background-color: #f2f2f2;
+	}
+  .list{
+    flex: 1;
+  }
+  .item{
+    padding: 20rpx;
+  }
+  .text{
+    font-size: 32rpx;
+  }
+  .footer{}
+  .footer-bd{
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: height 0.3s ease 0;
+    background-color: #fff;
+    border-top-width: 1px;
+    border-top-color: #dedede;
+    border-top-style: solid;
+  }
+  .input-box{
+    height: 120rpx;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30rpx;
+  }
+  .input{
+    height: 80rpx;
+    width: 600rpx;
+    background-color: #fff;
+    border-width: 1px;
+    border-color: #dedede;
+    border-style: solid;
+    border-radius: 10rpx;
+    padding: 0 20rpx;
+    color: #333;
+    font-size: 30rpx;
+  }
+  .placeholder{
+    color: #999;
+    font-size: 15px;
+  }
+  .exten-box{
+    flex-direction: row;
+    justify-content: center;
+    padding: 40rpx 0 0;
+  }
+  .exten-item{
+    width: 100rpx;
+    height: 100rpx;
+    border-radius: 100%;
+    background-color: #4CD964;
+    justify-content: center;
+    align-items: center;
+    margin: 0 30rpx;
+  }
+  .exten-item-text{
+    color: #fff;
+    font-size: 28rpx;
+    text-align: center;
+  }
+  .more{
+    width: 60rpx;
+    height: 60rpx;
+    color: #007AFF;
+    font-size: 32rpx;
+    border-width: 1px;
+    border-color: #007AFF;
+    border-style: solid;
+    border-radius: 100%;
+    background-color: #fff;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
