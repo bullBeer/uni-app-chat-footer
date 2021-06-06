@@ -8,7 +8,7 @@
     <view class="footer" :style="`height: ${footerHeight + safeAreaBottomHeight}px;`">
       <view class="footer-bd" :style="`height: ${footerHeight + safeAreaBottomHeight}px;`">
         <view class="input-box" id="input-box">
-          <input ref="input" placeholder-class="placeholder" @blur="blur" class="input" type="text" :adjust-position="false" :confirm-hold="true" confirm-type="send" placeholder="请输入" />
+          <input ref="input" placeholder-class="placeholder" @focus="focus" @blur="blur" class="input" type="text" :adjust-position="false" :confirm-hold="true" confirm-type="send" placeholder="请输入" />
           <text class="more" @tap="clickMore">+</text>
         </view>
         <view class="exten-box" id="exten-box" v-if="extenBoxShow">
@@ -67,9 +67,9 @@
       onKeyboardHeightChange(res) {
         // 轮询监听键盘高度，如果小于100表示键盘高度异常，解决ios第一次打开app弹出键盘时键盘高度为75（小于实际键盘高度）问题
         this.kTimer = setInterval(() => {
-          if (res.height > 100 && !this.hasKeyboard) {
+          if (res.height > 100 && this.isfocus) {
+            console.log('res.height', res.height) // 实际键盘高度
             clearInterval(this.kTimer)
-            console.log('res.height', res.height) // 键盘高度
             this.hasKeyboard = true
             this.extenBoxShow = false
             this.footerHeight = this.inputBoxHeight + res.height
@@ -95,9 +95,14 @@
           }).exec();
         })
       },
+      // input获取焦点
+      focus() {
+        this.isfocus = true
+      },
       // 键盘收缩|input失去焦点
       blur() {
         this.hasKeyboard = false
+        this.isfocus = false
         if (this.extenBoxShow) {
           this.footerHeight = this.inputBoxHeight + this.extenHeight
         } else {
