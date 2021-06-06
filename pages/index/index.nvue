@@ -66,6 +66,7 @@
       // 监听键盘高度
       onKeyboardHeightChange(res) {
         // 轮询监听键盘高度，如果小于100表示键盘高度异常，解决ios第一次打开app弹出键盘时键盘高度为75（小于实际键盘高度）问题
+        this.kTimer && clearInterval(this.kTimer)
         this.kTimer = setInterval(() => {
           if (res.height > 100 && this.isfocus) {
             console.log('res.height', res.height) // 实际键盘高度
