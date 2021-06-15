@@ -1,10 +1,15 @@
 <template>
 	<view class="container">
-		<list class="list" @touchstart="listTouch">
-      <cell class="item" v-for="(item, i) in 30" :key="i" :ref="'item' + i">
-        <text class="text">消息-哈哈哈+{{i}}</text>
-      </cell>
-    </list>
+		<view class="list-main">
+      <list class="list" ref="list" @touchstart="listTouch" @scroll="scroll" @loadmore="loadmore">
+        <cell class="item" v-for="(item, i) in list" :key="item.id" :ref="'item' + i">
+          <text class="text">{{item.content}}+{{item.id}}</text>
+        </cell>
+        <cell class="loading">
+          <loading-indicator class="loading-indicator" animating></loading-indicator> 
+        </cell>
+      </list>
+    </view>
     <view class="footer" :style="`height: ${footerHeight + safeAreaBottomHeight}px;`">
       <view class="footer-bd" :style="`height: ${footerHeight + safeAreaBottomHeight}px;`">
         <view class="input-box" id="input-box">
@@ -37,6 +42,31 @@
 	export default {
 		data() {
 			return {
+        // isLoading: false,
+        list: [
+          {id: 1, content: '消息内容'},
+          {id: 2, content: '消息内容'},
+          {id: 3, content: '消息内容'},
+          {id: 4, content: '消息内容'},
+          {id: 5, content: '消息内容'},
+          {id: 6, content: '消息内容'},
+          {id: 7, content: '消息内容'},
+          {id: 8, content: '消息内容'},
+          {id: 9, content: '消息内容'},
+          {id: 10, content: '消息内容'},
+          {id: 11, content: '消息内容'},
+          {id: 12, content: '消息内容'},
+          {id: 13, content: '消息内容'},
+          {id: 14, content: '消息内容'},
+          {id: 15, content: '消息内容'},
+          {id: 16, content: '消息内容'},
+          {id: 17, content: '消息内容'},
+          {id: 18, content: '消息内容'},
+          {id: 19, content: '消息内容'},
+          {id: 20, content: '消息内容'},
+        ].reverse(),
+        pageList: [],
+        chatId: 0,
         hasKeyboard: false, // 是否弹出键盘
         footerHeight: 0, // 底部高度 键盘弹出时：高度=键盘高度+输入框容器高度，键盘收缩时：高度=聊天更多功能容器高度+输入框容器高度||输入框容器高度
         inputBoxHeight: 0, // 输入框容器高度
@@ -49,6 +79,8 @@
         return this.hasKeyboard ? 0 : safeAreaBottomHeight
       }
     },
+    onLoad() {
+    },
     mounted() {
       // 初始化底部高度
       this.inputBoxHeight = this.getPX(120)
@@ -59,6 +91,8 @@
       uni.onKeyboardHeightChange(this.onKeyboardHeightChange)
     },
     onUnload() {
+      console.log('onUnload')
+      
       // 取消监听键盘高度
       uni.offKeyboardHeightChange(this.onKeyboardHeightChange)
     },
@@ -75,7 +109,7 @@
             this.extenBoxShow = false
             this.footerHeight = this.inputBoxHeight + res.height
             setTimeout(() => {
-              dom.scrollToElement(this.$refs['item' + 29][0], {
+              dom.scrollToElement(this.$refs['item' + 0][0], {
                 // animated: false //  禁止动画
               })
             }, 50)
@@ -110,7 +144,7 @@
           this.footerHeight = this.inputBoxHeight
         }
         setTimeout(() => {
-          dom.scrollToElement(this.$refs['item' + 29][0], {
+          dom.scrollToElement(this.$refs['item' + 0][0], {
             // animated: false //  禁止动画
           })
         }, 50)
@@ -138,6 +172,26 @@
           this.$refs.input.blur()
         }
       },
+      loadmore() {
+        clearTimeout(this.loadmoreTimer)
+        this.loadmoreTimer = setTimeout(() => {
+          const id = Date.now()
+          this.pageList = [
+            {id: id + 1, content: '消息内容'},
+            {id: id + 2, content: '消息内容'},
+            {id: id + 3, content: '消息内容'},
+            {id: id + 4, content: '消息内容'},
+            {id: id + 5, content: '消息内容'},
+            {id: id + 6, content: '消息内容'},
+            {id: id + 7, content: '消息内容'},
+            {id: id + 8, content: '消息内容'},
+            {id: id + 9, content: '消息内容'},
+            {id: id + 10, content: '消息内容'}
+          ].reverse()
+          this.list = this.list.concat(this.pageList)
+        }, 1000)
+        console.log('loadmore')
+      }
 		}
 	}
 </script>
@@ -148,10 +202,28 @@
     overflow: hidden;
     background-color: #f2f2f2;
 	}
+  .list-main{
+    flex: 1;
+    
+  }
   .list{
+    transform: rotate(-180deg);
     flex: 1;
   }
+  .loading{
+    width: 750rpx;
+    height: 80rpx;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .loading-indicator{
+    width: 30rpx;
+    height: 30rpx;
+  }
   .item{
+    transform: rotate(180deg);
     padding: 20rpx;
   }
   .text{

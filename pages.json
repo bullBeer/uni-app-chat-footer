@@ -1,10 +1,12 @@
 {
-	"pages": [{
-		"path": "pages/index/index",
-		"style": {
-			"navigationBarTitleText": "uni-app"
-		}
-	}],
+	"pages": [
+    {
+      "path": "pages/index/chat",
+      "style": {
+        "navigationBarTitleText": "聊天室"
+      }
+    }
+  ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
